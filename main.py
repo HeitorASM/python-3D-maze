@@ -13,7 +13,7 @@ from render import Renderer
 class MazeGame:
     def __init__(self, width=1200, height=800):
         self.width = width
-        self.height = height
+        self. height = height
         self.maze_size = 21  # Tamanho do labirinto (deve ser ímpar)
         
         # Inicializar pygame
@@ -88,9 +88,9 @@ class MazeGame:
         """Ajustar FOV"""
         self.fov += delta
         if self.fov < self.fov_min:
-            self.fov = self.fov_min
+            self.fov = self. fov_min
         elif self.fov > self.fov_max:
-            self.fov = self.fov_max
+            self. fov = self.fov_max
         self._update_projection()
     
     def handle_input(self):
@@ -99,41 +99,43 @@ class MazeGame:
         
         # Movimento
         move_speed = 0.1
-        if keys[K_w]:
-            self.camera.move_forward(move_speed)
-        if keys[K_s]:
-            self.camera.move_backward(move_speed)
+        if keys[K_w]:  
+            self.camera.move_forward(move_speed, self.maze)
+        if keys[K_s]: 
+            self.camera.move_backward(move_speed, self. maze)
         if keys[K_a]:
-            self.camera.move_left(move_speed)
+            self.camera.move_left(move_speed, self.maze)
         if keys[K_d]:
-            self.camera.move_right(move_speed)
-        if keys[K_SPACE]:
-            self.camera.move_up(move_speed)
-        if keys[K_LCTRL]:
-            self.camera.move_down(move_speed)
+            self.camera.move_right(move_speed, self.maze)
+        
+        # Pular (substitui move_up)
+        if keys[K_SPACE]:  
+            self.camera.jump(self.maze)
+        
+        # Remover move_down - agora controlado por gravidade
         
         # Ajustar FOV
         if keys[K_PAGEUP] or keys[K_EQUALS]:
             self._adjust_fov(self.fov_step)
-        if keys[K_PAGEDOWN] or keys[K_MINUS]:
+        if keys[K_PAGEDOWN] or keys[K_MINUS]: 
             self._adjust_fov(-self.fov_step)
         
-        # Verificar colisão com paredes
-        self.camera.check_collision(self.maze)
+        # Atualizar física (IMPORTANTE!)
+        self.camera.update_physics(self.maze)
         
         # Mouse look quando capturado
-        if self.mouse_captured:
+        if self. mouse_captured:
             mouse_x, mouse_y = pygame.mouse.get_rel()
             self.camera.rotate(mouse_x * 0.5, mouse_y * 0.5)
         
         # Eventos
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
+            if event. type == pygame.QUIT:
+                self. running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE: 
-                    self.running = False
-                if event.key == pygame.K_r:
+                if event.key == pygame.K_ESCAPE:    
+                    self. running = False
+                if event. key == pygame.K_r:
                     # Resetar câmera
                     self.camera = Camera()
                 if event.key == pygame.K_BACKSPACE:
@@ -143,13 +145,13 @@ class MazeGame:
                 if event.key == pygame.K_f:
                     # Alternar FOV entre valores comuns
                     if self.fov == 90:
-                        self.fov = 60
+                        self. fov = 60
                     elif self.fov == 60:
                         self.fov = 120
                     else:
                         self.fov = 90
                     self._update_projection()
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame. MOUSEBUTTONDOWN:
                 if event.button == 1:  # Botão esquerdo
                     if not self.mouse_captured:
                         self._capture_mouse()
@@ -175,16 +177,16 @@ class MazeGame:
         print("=== Labirinto 3D ===")
         print("Controles:")
         print("  W/A/S/D - Movimento")
-        print("  ESPAÇO - Subir")
-        print("  CTRL - Descer")
+        print("  ESPAÇO - Pular")
         print("  Clique esquerdo - Capturar mouse")
         print("  BACKSPACE - Liberar mouse")
         print("  +/- ou SCROLL - Ajustar FOV")
         print("  F - Alternar entre FOVs comuns (60/90/120)")
         print("  R - Resetar câmera")
-        print("  ESC - Sair")
+        print("  ESC - Retornar ao menu")
         print(f"  FOV atual: {self.fov}°")
-        print(" Obrigado por jogaa - HAM")
+        print("Obrigado por jogar - HAM")
+        
         while self.running:
             self.handle_input()
             self.render()
@@ -193,13 +195,15 @@ class MazeGame:
             # Mostrar FPS e FOV
             fps = self.clock.get_fps()
             mouse_status = "CAPTURADO" if self.mouse_captured else "LIVRE"
-            pygame.display.set_caption(f"Labirinto 3D - FPS: {fps:.0f} - FOV: {self.fov}° - Mouse: {mouse_status}")
+            grounded_status = "NO CHÃO" if self.camera.grounded else "NO AR"
+            pygame.display.set_caption(f"Labirinto 3D - FPS: {fps:.0f} - FOV: {self.fov}° - Mouse: {mouse_status} - {grounded_status}")
         
         self._release_mouse()  # Liberar mouse ao sair
         pygame.quit()
-        sys.exit()
 
 
 if __name__ == "__main__":
-    game = MazeGame()
-    game.run()
+    # Importar e executar o menu
+    from menu import Menu
+    menu = Menu()
+    menu.executar()
