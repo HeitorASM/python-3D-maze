@@ -121,7 +121,7 @@ class TelaAbout:
         self.botao_voltar = Botao(largura // 2 - 150, altura - 100, 300, 60, "VOLTAR", AZUL, VERDE, BRANCO)
         
         self.informacoes = [
-            "LABIRINTO 3D v1.0.0",
+            "LABIRINTO 3D v0.0.2",
             "",
             "Um jogo de exploração em 3D onde você",
             "precisa encontrar a saída de um labirinto gerado",
