@@ -12,7 +12,7 @@ execute o arquivo requirements.txt após isso execute o arquivo **main.py**
  ```
 ### A apos isso **entre na pasta do arquivo abra o console e execute esse comando:**
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 ---
 ## Requisitos
