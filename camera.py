@@ -1,20 +1,21 @@
 import math
 import numpy as np
+import pygame
 
 class Camera:
-    def __init__(self, x=1.5, y=1.5, z=1.5):
+    def __init__(self, x=3.0, y=0.0, z=3.0):
         self.x = x
-        self. y = y
+        self.y = y
         self.z = z
         
         # Ângulos de rotação
-        self. yaw = 0.0  # Rotação horizontal
+        self.yaw = 0.0  # Rotação horizontal
         self.pitch = 0.0  # Rotação vertical
         
         # Altura do olho
         self.height = 1.7  
         
-        self. speed = 0.15
+        self.speed = 0.15
         
         # Colisor em forma de cápsula
         self.capsule_radius = 0.3
@@ -33,13 +34,17 @@ class Camera:
         self.ground_level = 0.0  # Nível do piso
         self.max_height = 15.0  # Altura máxima permitida
         self.jump_strength = 0.3  # Força do pulo (ajustável)
+        
+        # Estado do jogo
+        self.has_won = False
+        self.win_time = None
     
     def apply(self):
         """Aplicar transformação da câmera"""
         from OpenGL.GL import glRotatef, glTranslatef
         
         glRotatef(self.pitch, 1, 0, 0)
-        glRotatef(self. yaw, 0, 1, 0)
+        glRotatef(self.yaw, 0, 1, 0)
         glTranslatef(-self.x, -(self.y + self.height), -self.z)
     
     def rotate(self, yaw_delta, pitch_delta):
@@ -55,6 +60,9 @@ class Camera:
     
     def move_forward(self, distance, maze):
         """Mover para frente (com detecção de colisão por eixo)"""
+        if self.has_won:
+            return
+            
         rad_yaw = math.radians(self.yaw)
         dx = math.sin(rad_yaw) * distance
         dz = -math.cos(rad_yaw) * distance
@@ -69,51 +77,69 @@ class Camera:
         
         # Tentar mover em Z
         self.z += dz
-        if self._check_circle_collision(maze, self.x, self. y, self.z):
+        if self._check_circle_collision(maze, self.x, self.y, self.z):
             self.z = old_z
+        
+        # Verificar se chegou na saída
+        self._check_win_condition(maze)
     
     def move_backward(self, distance, maze):
         """Mover para trás"""
+        if self.has_won:
+            return
         self.move_forward(-distance, maze)
     
     def move_left(self, distance, maze):
         """Mover para esquerda (com detecção de colisão por eixo)"""
+        if self.has_won:
+            return
+            
         rad_yaw = math.radians(self.yaw)
         dx = -math.cos(rad_yaw) * distance
-        dz = -math. sin(rad_yaw) * distance
+        dz = -math.sin(rad_yaw) * distance
         
         old_x, old_z = self.x, self.z
         
         # Tentar mover em X
         self.x += dx
-        if self._check_circle_collision(maze, self. x, self.y, self. z):
+        if self._check_circle_collision(maze, self.x, self.y, self.z):
             self.x = old_x
         
         # Tentar mover em Z
         self.z += dz
         if self._check_circle_collision(maze, self.x, self.y, self.z):
             self.z = old_z
+        
+        # Verificar se chegou na saída
+        self._check_win_condition(maze)
     
     def move_right(self, distance, maze):
         """Mover para direita"""
+        if self.has_won:
+            return
         self.move_left(-distance, maze)
     
     def jump(self, maze):
         """Pular (só funciona se estiver no chão)"""
+        if self.has_won:
+            return
         if self.grounded:
-            self. velocity_y = self.jump_strength
+            self.velocity_y = self.jump_strength
             self.grounded = False
     
     def update_physics(self, maze):
         """
-        Atualizar física:  aplicar gravidade, checar colisões verticais,
+        Atualizar física: aplicar gravidade, checar colisões verticais,
         e garantir que o jogador não flutua nem cai infinitamente.
         """
+        if self.has_won:
+            return
+            
         # Aplicar gravidade
         self.velocity_y += self.gravity
         
         # Calcular próxima posição vertical
-        next_y = self. y + self.velocity_y
+        next_y = self.y + self.velocity_y
         
         # Impedir cair abaixo do chão
         if next_y < self.ground_level:
@@ -146,8 +172,11 @@ class Camera:
             self.velocity_y = 0
         else:
             # Sem colisão, atualizar posição
-            self. y = next_y
-            self. grounded = False
+            self.y = next_y
+            self.grounded = False
+        
+        # Verificar se chegou na saída
+        self._check_win_condition(maze)
     
     def check_capsule_collision(self, maze):
         """Verificar colisão da cápsula com paredes (mantido para compatibilidade)"""
@@ -178,7 +207,7 @@ class Camera:
             check_x = center_x + dx
             check_z = center_z + dz
             
-            if maze. is_wall(check_x, check_z):
+            if maze.is_wall(check_x, check_z):
                 return True
         
         # Verificar também o ponto central
@@ -186,6 +215,24 @@ class Camera:
             return True
         
         return False
+    
+    def _check_win_condition(self, maze):
+        """Verificar se o jogador chegou na saída"""
+        if self.has_won:
+            return
+            
+        # Calcular posição da saída (esfera verde)
+        cell_size = maze.cell_size
+        end_x = (maze.size - 2) * cell_size + cell_size / 2
+        end_z = (maze.size - 2) * cell_size + cell_size / 2
+        
+        # Distância entre jogador e saída
+        distance = math.sqrt((self.x - end_x)**2 + (self.z - end_z)**2)
+        
+        # Se estiver próximo o suficiente (raio da esfera + raio da cápsula)
+        if distance < (0.4 + self.capsule_radius):
+            self.has_won = True
+            self.win_time = pygame.time.get_ticks()
     
     def check_collision(self, maze):
         """Interface compatível - agora usando cápsula"""

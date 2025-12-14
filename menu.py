@@ -4,9 +4,7 @@ Sistema de menu para o jogo Labirinto 3D - Usando Pygame 2D
 import pygame
 import sys
 from enum import Enum
-
-# Inicializar Pygame
-pygame.init()
+import time
 
 # Cores
 PRETO = (0, 0, 0)
@@ -127,6 +125,9 @@ class TelaAbout:
             "precisa encontrar a saída de um labirinto gerado",
             "proceduralmente usando algoritmo de Depth-First Search.",
             "",
+            "OBJETIVO:",
+            "Encontre a esfera verde para vencer!",
+            "",
             "DESENVOLVIDO POR:",
             "HAM (Heitor ASM)",
             "",
@@ -141,6 +142,8 @@ class TelaAbout:
             "",
             "O objetivo do jogo é explorar o labirinto e",
             "encontrar a saída marcada por uma esfera verde.",
+            "Quando encontrar, uma mensagem de vitória",
+            "será exibida com seu tempo de conclusão!",
         ]
     
     def desenhar(self, tela, fonte_grande, fonte_pequena):
@@ -261,6 +264,7 @@ class Menu:
     def __init__(self, largura=1200, altura=800):
         self.largura = largura
         self.altura = altura
+        pygame.init() # Inicializa Pygame aqui
         self.tela = pygame.display.set_mode((largura, altura))
         pygame.display.set_caption("Labirinto 3D - Menu")
         
@@ -335,8 +339,21 @@ class Menu:
         game = MazeGame()
         game.run()
         
-        # Se voltar do jogo, reiniciar menu
-        self.executando = False
+        # --- CORREÇÃO: Reinicializa o Pygame e o menu para permitir o retorno ---
+        
+        # Reinicializar Pygame (perdido após pygame.quit() acima)
+        pygame.init()
+        self.tela = pygame.display.set_mode((self.largura, self.altura))
+        pygame.display.set_caption("Labirinto 3D - Menu")
+        
+        # Redefinir fontes
+        pygame.font.init() 
+        self.fonte_grande = pygame.font.Font(None, 70)
+        self.fonte_media = pygame.font.Font(None, 40)
+        self.fonte_pequena = pygame.font.Font(None, 25)
+        
+        self.estado_atual = MenuState.PRINCIPAL
+        self.executando = True 
     
     def executar(self):
         """Loop principal do menu"""
