@@ -1,12 +1,12 @@
 import random
 
 class Maze:
-    def __init__(self, size, cell_size=2.0): # Adicionado parâmetro cell_size
+    def __init__(self, size, cell_size=3.5):  # Aumentado de 2.0 para 3.5 (ou mais) quanto maior maior a distancia entre as predes
         if size % 2 == 0:
             size += 1
-        
+
         self.size = size
-        self.cell_size = cell_size # Define a largura de cada corredor/parede
+        self.cell_size = cell_size  # Define a largura de cada corredor/parede
         self.grid = [[1] * size for _ in range(size)]
         self._generate_maze()
         

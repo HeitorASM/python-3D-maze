@@ -23,7 +23,7 @@ class MazeGame:
         
         # Usar DOUBLEBUF para melhor desempenho
         self.screen = pygame.display.set_mode(self.display, DOUBLEBUF | OPENGL)
-        pygame.display.set_caption("Labirinto 3D")
+        pygame.display.set_caption("GLMaze")
         
         # Configurações de FOV
         self.fov = 90  # Campo de visão inicial (em graus)
@@ -263,12 +263,12 @@ class MazeGame:
                         self.fov = 90
                     self._update_projection()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Botão esquerdo
+                if event.button == 1:  
                     if not self.mouse_captured:
                         self._capture_mouse()
-                elif event.button == 4:  # Scroll up
+                elif event.button == 4:  
                     self._adjust_fov(self.fov_step)
-                elif event.button == 5:  # Scroll down
+                elif event.button == 5:  
                     self._adjust_fov(-self.fov_step)
     
     def render(self):
@@ -289,7 +289,7 @@ class MazeGame:
     
     def run(self):
         """Loop principal do jogo"""
-        print("=== Labirinto 3D ===")
+        print("=== GLMaze ===")
         print("Controles:")
         print("  W/A/S/D - Movimento")
         print("  ESPAÇO - Pular")

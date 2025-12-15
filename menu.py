@@ -2,6 +2,7 @@ import pygame
 import sys
 from enum import Enum
 import time
+import os  # Adicionado para verificar existência de arquivos
 
 PRETO = (0, 0, 0)
 CINZA_ESCURO = (40, 40, 40)
@@ -20,19 +21,17 @@ class MenuState(Enum):
 
 
 class Botao:
-    """Classe para representar um botão"""
     def __init__(self, x, y, largura, altura, texto, cor_normal, cor_hover, cor_texto):
         self.rect = pygame.Rect(x, y, largura, altura)
         self.texto = texto
-        self. cor_normal = cor_normal
+        self.cor_normal = cor_normal
         self.cor_hover = cor_hover
         self.cor_texto = cor_texto
         self.mouse_sobre = False
         
     def desenhar(self, tela, fonte):
-        """Desenhar o botão na tela"""
         cor = self.cor_hover if self.mouse_sobre else self.cor_normal
-        pygame. draw.rect(tela, cor, self.rect)
+        pygame.draw.rect(tela, cor, self.rect)
         pygame.draw.rect(tela, self.cor_texto, self.rect, 3)
         
         # Renderizar texto
@@ -41,7 +40,6 @@ class Botao:
         tela.blit(texto_surf, texto_rect)
     
     def atualizar_mouse(self, pos_mouse):
-        """Atualizar se o mouse está sobre o botão"""
         self.mouse_sobre = self.rect.collidepoint(pos_mouse)
     
     def foi_clicado(self, pos_mouse):
@@ -63,37 +61,46 @@ class MenuPrincipal:
         self.botoes = [self.botao_jogar, self.botao_sobre, self.botao_controles, self.botao_sair]
     
     def desenhar(self, tela, fonte_grande, fonte_media):
-        """Desenhar a tela principal"""
         tela.fill(CINZA_ESCURO)
         
         # Título
-        titulo = fonte_grande.render("LABIRINTO 3D", True, VERDE)
+        titulo = fonte_grande.render("GLMaze", True, VERDE)
         titulo_rect = titulo.get_rect(center=(self.largura // 2, 100))
         tela.blit(titulo, titulo_rect)
         
         # Subtítulo
         subtitulo = fonte_media.render("Developed by HAM", True, CINZA_CLARO)
-        subtitulo_rect = subtitulo. get_rect(center=(self. largura // 2, 180))
+        subtitulo_rect = subtitulo.get_rect(center=(self.largura // 2, 180))
         tela.blit(subtitulo, subtitulo_rect)
         
         # Desenhar botões
         for botao in self.botoes:
             botao.desenhar(tela, fonte_media)
     
-    def processar_evento(self, evento):
+    def processar_evento(self, evento, click_sound):
         """Processar eventos do menu"""
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if self.botao_jogar.foi_clicado(evento.pos):
-                return MenuState. JOGANDO
+                if click_sound:
+                    click_sound.play()
+                return MenuState.JOGANDO
             elif self.botao_sobre.foi_clicado(evento.pos):
+                if click_sound:
+                    click_sound.play()
                 return MenuState.SOBRE
-            elif self.botao_controles. foi_clicado(evento. pos):
-                return MenuState. CONTROLES
-            elif self. botao_sair.foi_clicado(evento.pos):
+            elif self.botao_controles.foi_clicado(evento.pos):
+                if click_sound:
+                    click_sound.play()
+                return MenuState.CONTROLES
+            elif self.botao_sair.foi_clicado(evento.pos):
+                if click_sound:
+                    click_sound.play()
                 return MenuState.SAIR
         
         if evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_ESCAPE: 
+            if evento.key == pygame.K_ESCAPE:
+                if click_sound:
+                    click_sound.play()
                 return MenuState.SAIR
         
         return None
@@ -112,31 +119,21 @@ class TelaAbout:
         self.botao_voltar = Botao(largura // 2 - 150, altura - 100, 300, 60, "VOLTAR", AZUL, VERDE, BRANCO)
         
         self.informacoes = [
-            "LABIRINTO 3D v0.0.2",
-            "",
+            "GLMaze v0.0.2",
             "Um jogo de exploração em 3D onde você",
             "precisa encontrar a saída de um labirinto gerado",
             "proceduralmente usando algoritmo de Depth-First Search.",
-            "",
             "OBJETIVO:",
             "Encontre a esfera verde para vencer!",
-            "",
             "DESENVOLVIDO POR:",
-            "HAM (Heitor ASM)",
-            "",
+            "HAM",
             "DATA DE CRIAÇÃO:",
             "13 de Dezembro de 2025",
-            "",
             "TECNOLOGIAS UTILIZADAS:",
             "• Python 3",
             "• Pygame",
             "• OpenGL (PyOpenGL)",
             "• NumPy",
-            "",
-            "O objetivo do jogo é explorar o labirinto e",
-            "encontrar a saída marcada por uma esfera verde.",
-            "Quando encontrar, uma mensagem de vitória",
-            "será exibida com seu tempo de conclusão!",
         ]
     
     def desenhar(self, tela, fonte_grande, fonte_pequena):
@@ -150,7 +147,7 @@ class TelaAbout:
         # Informações
         y_offset = 100
         for linha in self.informacoes:
-            if linha: 
+            if linha:
                 texto = fonte_pequena.render(linha, True, CINZA_CLARO)
             else:
                 texto = fonte_pequena.render(" ", True, CINZA_CLARO)
@@ -162,20 +159,24 @@ class TelaAbout:
         # Botão voltar
         self.botao_voltar.desenhar(tela, fonte_pequena)
     
-    def processar_evento(self, evento):
-        if evento.type == pygame.MOUSEBUTTONDOWN: 
+    def processar_evento(self, evento, click_sound):
+        if evento.type == pygame.MOUSEBUTTONDOWN:
             if self.botao_voltar.foi_clicado(evento.pos):
+                if click_sound:
+                    click_sound.play()
                 return MenuState.PRINCIPAL
         
         if evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_ESCAPE: 
+            if evento.key == pygame.K_ESCAPE:
+                if click_sound:
+                    click_sound.play()
                 return MenuState.PRINCIPAL
         
         return None
     
     def atualizar(self, pos_mouse):
         """Atualizar estado"""
-        self.botao_voltar. atualizar_mouse(pos_mouse)
+        self.botao_voltar.atualizar_mouse(pos_mouse)
 
 
 class TelaControles:
@@ -218,8 +219,8 @@ class TelaControles:
         
         y_offset = 80
         for linha in self.controles:
-            if linha: 
-                texto = fonte_pequena. render(linha, True, CINZA_CLARO)
+            if linha:
+                texto = fonte_pequena.render(linha, True, CINZA_CLARO)
             else:
                 texto = fonte_pequena.render(" ", True, CINZA_CLARO)
             
@@ -230,19 +231,23 @@ class TelaControles:
         # Botão voltar
         self.botao_voltar.desenhar(tela, fonte_pequena)
     
-    def processar_evento(self, evento):
+    def processar_evento(self, evento, click_sound):
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if self.botao_voltar.foi_clicado(evento.pos):
-                return MenuState. PRINCIPAL
+                if click_sound:
+                    click_sound.play()
+                return MenuState.PRINCIPAL
         
-        if evento. type == pygame.KEYDOWN: 
+        if evento.type == pygame.KEYDOWN:
             if evento.key == pygame.K_ESCAPE:
+                if click_sound:
+                    click_sound.play()
                 return MenuState.PRINCIPAL
         
         return None
     
     def atualizar(self, pos_mouse):
-        self. botao_voltar.atualizar_mouse(pos_mouse)
+        self.botao_voltar.atualizar_mouse(pos_mouse)
 
 
 class Menu:
@@ -262,6 +267,25 @@ class Menu:
         self.fonte_media = pygame.font.Font(None, 40)
         self.fonte_pequena = pygame.font.Font(None, 25)
         
+        # Inicializar mixer de áudio
+        pygame.mixer.init()
+        
+        # Carregar som de clique
+        self.click_sound = None
+        sound_path = "Assets/audio/click1.ogg"
+        
+        if os.path.exists(sound_path):
+            try:
+                self.click_sound = pygame.mixer.Sound(sound_path)
+                self.click_sound.set_volume(0.5)  # Volume ajustável
+                print(f"Som de clique carregado: {sound_path}")
+            except Exception as e:
+                print(f"Erro ao carregar som: {e}")
+                self.click_sound = None
+        else:
+            print(f"Arquivo de som não encontrado: {sound_path}")
+            print("Continuando sem som...")
+        
         # Telas
         self.menu_principal = MenuPrincipal(largura, altura)
         self.tela_about = TelaAbout(largura, altura)
@@ -270,20 +294,20 @@ class Menu:
     def processar_eventos(self):
         """Processar eventos"""
         for evento in pygame.event.get():
-            if evento. type == pygame.QUIT: 
+            if evento.type == pygame.QUIT:
                 self.executando = False
                 return
             
             novo_estado = None
             
-            if self.estado_atual == MenuState. PRINCIPAL:
-                novo_estado = self.menu_principal.processar_evento(evento)
+            if self.estado_atual == MenuState.PRINCIPAL:
+                novo_estado = self.menu_principal.processar_evento(evento, self.click_sound)
             elif self.estado_atual == MenuState.SOBRE:
-                novo_estado = self.tela_about.processar_evento(evento)
+                novo_estado = self.tela_about.processar_evento(evento, self.click_sound)
             elif self.estado_atual == MenuState.CONTROLES:
-                novo_estado = self.tela_controles.processar_evento(evento)
+                novo_estado = self.tela_controles.processar_evento(evento, self.click_sound)
             
-            if novo_estado: 
+            if novo_estado:
                 self.estado_atual = novo_estado
     
     def atualizar(self):
@@ -291,11 +315,11 @@ class Menu:
         pos_mouse = pygame.mouse.get_pos()
         
         if self.estado_atual == MenuState.PRINCIPAL:
-            self. menu_principal.atualizar(pos_mouse)
-        elif self.estado_atual == MenuState. SOBRE:
+            self.menu_principal.atualizar(pos_mouse)
+        elif self.estado_atual == MenuState.SOBRE:
             self.tela_about.atualizar(pos_mouse)
-        elif self.estado_atual == MenuState. CONTROLES:
-            self. tela_controles.atualizar(pos_mouse)
+        elif self.estado_atual == MenuState.CONTROLES:
+            self.tela_controles.atualizar(pos_mouse)
         
         if self.estado_atual == MenuState.SAIR:
             self.executando = False
@@ -305,8 +329,8 @@ class Menu:
     def desenhar(self):
         """Desenhar o menu"""
         if self.estado_atual == MenuState.PRINCIPAL:
-            self. menu_principal.desenhar(self.tela, self.fonte_grande, self. fonte_media)
-        elif self.estado_atual == MenuState. SOBRE:
+            self.menu_principal.desenhar(self.tela, self.fonte_grande, self.fonte_media)
+        elif self.estado_atual == MenuState.SOBRE:
             self.tela_about.desenhar(self.tela, self.fonte_grande, self.fonte_pequena)
         elif self.estado_atual == MenuState.CONTROLES:
             self.tela_controles.desenhar(self.tela, self.fonte_grande, self.fonte_pequena)
@@ -327,6 +351,20 @@ class Menu:
         
         # Reinicializar Pygame (perdido após pygame.quit() acima)
         pygame.init()
+        
+        # Reinicializar mixer de áudio
+        pygame.mixer.init()
+        
+        # Recarregar som de clique após reinicialização
+        sound_path = "Assets/audio/click1.ogg"
+        if os.path.exists(sound_path):
+            try:
+                self.click_sound = pygame.mixer.Sound(sound_path)
+                self.click_sound.set_volume(0.5)
+            except Exception as e:
+                print(f"Erro ao recarregar som: {e}")
+                self.click_sound = None
+        
         self.tela = pygame.display.set_mode((self.largura, self.altura))
         pygame.display.set_caption("Labirinto 3D - Menu")
         
@@ -356,5 +394,4 @@ class Menu:
 
 if __name__ == "__main__": 
     menu = Menu()
-
     menu.executar()
