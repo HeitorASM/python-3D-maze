@@ -1,12 +1,8 @@
-"""
-Sistema de menu para o jogo Labirinto 3D - Usando Pygame 2D
-"""
 import pygame
 import sys
 from enum import Enum
 import time
 
-# Cores
 PRETO = (0, 0, 0)
 CINZA_ESCURO = (40, 40, 40)
 CINZA_CLARO = (200, 200, 200)
@@ -15,7 +11,6 @@ VERDE = (0, 255, 0)
 VERMELHO = (255, 0, 0)
 AZUL = (100, 150, 255)
 
-# Estados do menu
 class MenuState(Enum):
     PRINCIPAL = 1
     SOBRE = 2
@@ -50,12 +45,10 @@ class Botao:
         self.mouse_sobre = self.rect.collidepoint(pos_mouse)
     
     def foi_clicado(self, pos_mouse):
-        """Verificar se o botão foi clicado"""
         return self.rect.collidepoint(pos_mouse)
 
 
 class MenuPrincipal:
-    """Tela do menu principal"""
     def __init__(self, largura, altura):
         self.largura = largura
         self.altura = altura
@@ -147,7 +140,6 @@ class TelaAbout:
         ]
     
     def desenhar(self, tela, fonte_grande, fonte_pequena):
-        """Desenhar a tela sobre"""
         tela.fill(CINZA_ESCURO)
         
         # Título
@@ -171,7 +163,6 @@ class TelaAbout:
         self.botao_voltar.desenhar(tela, fonte_pequena)
     
     def processar_evento(self, evento):
-        """Processar eventos"""
         if evento.type == pygame.MOUSEBUTTONDOWN: 
             if self.botao_voltar.foi_clicado(evento.pos):
                 return MenuState.PRINCIPAL
@@ -219,15 +210,12 @@ class TelaControles:
         ]
     
     def desenhar(self, tela, fonte_grande, fonte_pequena):
-        """Desenhar a tela de controles"""
         tela.fill(CINZA_ESCURO)
         
-        # Título
         titulo = fonte_grande.render("CONTROLES", True, VERDE)
         titulo_rect = titulo.get_rect(center=(self.largura // 2, 20))
         tela.blit(titulo, titulo_rect)
         
-        # Controles
         y_offset = 80
         for linha in self.controles:
             if linha: 
@@ -243,7 +231,6 @@ class TelaControles:
         self.botao_voltar.desenhar(tela, fonte_pequena)
     
     def processar_evento(self, evento):
-        """Processar eventos"""
         if evento.type == pygame.MOUSEBUTTONDOWN:
             if self.botao_voltar.foi_clicado(evento.pos):
                 return MenuState. PRINCIPAL
@@ -255,12 +242,10 @@ class TelaControles:
         return None
     
     def atualizar(self, pos_mouse):
-        """Atualizar estado"""
         self. botao_voltar.atualizar_mouse(pos_mouse)
 
 
 class Menu:
-    """Sistema completo de menu"""
     def __init__(self, largura=1200, altura=800):
         self.largura = largura
         self.altura = altura
@@ -272,8 +257,7 @@ class Menu:
         self.executando = True
         self.estado_atual = MenuState.PRINCIPAL
         self.fps = 60
-        
-        # Fontes
+
         self.fonte_grande = pygame.font.Font(None, 70)
         self.fonte_media = pygame.font.Font(None, 40)
         self.fonte_pequena = pygame.font.Font(None, 25)
@@ -372,4 +356,5 @@ class Menu:
 
 if __name__ == "__main__": 
     menu = Menu()
+
     menu.executar()
